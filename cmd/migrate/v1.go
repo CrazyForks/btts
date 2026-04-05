@@ -161,8 +161,9 @@ func migrateChat(ctx context.Context, oldIndex, newIndex meilisearch.IndexManage
 				MessageID:   hit.ID,
 			})
 		}
-		priKey := "id"
-		_, err = newIndex.AddDocumentsWithContext(ctx, newDocs, &priKey)
+		_, err = newIndex.AddDocumentsWithContext(ctx, newDocs, &meilisearch.DocumentOptions{
+			PrimaryKey: new("id"),
+		})
 		if err != nil {
 			return fmt.Errorf("failed to update documents: %w", err)
 		}

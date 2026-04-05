@@ -134,7 +134,9 @@ func (m *Meilisearch) AddDocuments(ctx context.Context, chatID int64, docs []*ty
 		return err
 	}
 	retry.Retry(func() error {
-		_, err = m.Client.Index(m.Index).AddDocumentsWithContext(ctx, jsonData, new("id"))
+		_, err = m.Client.Index(m.Index).AddDocumentsWithContext(ctx, jsonData, &meilisearch.DocumentOptions{
+			PrimaryKey: new("id"),
+		})
 		return err
 	}, retry.Context(ctx), retry.RetryTimes(10), retry.RetryWithExponentialWithJitterBackoff(time.Second*3, 2, time.Second*2))
 	return err
@@ -224,14 +226,18 @@ func (m *Meilisearch) DeleteDocuments(ctx context.Context, chatID int64, ids []i
 	for _, id := range ids {
 		docIds = append(docIds, fmt.Sprintf("%d_%d", chatID, id))
 	}
-	_, err := m.Client.Index(m.Index).DeleteDocumentsWithContext(ctx, docIds)
+	_, err := m.Client.Index(m.Index).DeleteDocumentsWithContext(ctx, docIds, &meilisearch.DocumentOptions{
+		PrimaryKey: new("id"),
+	})
 	return err
 }
 
 // DeleteIndex implements engine.Searcher.
 func (m *Meilisearch) DeleteIndex(ctx context.Context, chatID int64) error {
 	// 删除索引相当于删除属于这个chat的所有文档
-	if _, err := m.Client.Index(m.Index).DeleteDocumentsByFilterWithContext(ctx, fmt.Sprintf("chat_id = %d", chatID)); err != nil {
+	if _, err := m.Client.Index(m.Index).DeleteDocumentsByFilterWithContext(ctx, fmt.Sprintf("chat_id = %d", chatID), &meilisearch.DocumentOptions{
+		PrimaryKey: new("id"),
+	}); err != nil {
 		return err
 	}
 	return nil

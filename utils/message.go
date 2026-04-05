@@ -162,7 +162,7 @@ func ExtractMessageMediaText(ctx context.Context, client *ext.Context, media tg.
 		poll := m.GetPoll()
 		messageSB.WriteString(poll.GetQuestion().Text)
 		for _, option := range poll.GetAnswers() {
-			messageSB.WriteString(" " + option.Text.GetText())
+			messageSB.WriteString(" " + option.GetText().Text)
 		}
 	case *tg.MessageMediaStory:
 		story, ok := m.GetStory()
